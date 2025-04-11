@@ -5,7 +5,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
   onConfirm,
   items
 }) => {
-  // State to track verification status for each item
+  // State to track verification status for each individual item instance
   const [verificationStatus, setVerificationStatus] = useState<Record<string, {
     verified: boolean;
     verifying: boolean;
@@ -34,7 +35,7 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
     error: boolean;
   }>>({});
 
-  // Initialize verification status for all items
+  // Initialize verification status for all individual item instances
   useEffect(() => {
     const initialStatus: Record<string, {
       verified: boolean;
@@ -44,12 +45,16 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
     }> = {};
     
     items.forEach(item => {
-      initialStatus[item.id] = {
-        verified: false,
-        verifying: false,
-        scannedBarcode: '',
-        error: false
-      };
+      // Create separate entries for each quantity of the item
+      for (let i = 0; i < item.quantity; i++) {
+        const itemInstanceId = `${item.id}-${i}`;
+        initialStatus[itemInstanceId] = {
+          verified: false,
+          verifying: false,
+          scannedBarcode: '',
+          error: false
+        };
+      }
     });
     
     setVerificationStatus(initialStatus);
@@ -58,36 +63,36 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
   // Check if all items are verified
   const allItemsVerified = Object.values(verificationStatus).every(status => status.verified);
 
-  // Handle barcode input change
-  const handleBarcodeInput = (itemId: string, value: string) => {
+  // Handle barcode input change for a specific item instance
+  const handleBarcodeInput = (itemInstanceId: string, value: string) => {
     setVerificationStatus(prev => ({
       ...prev,
-      [itemId]: {
-        ...prev[itemId],
+      [itemInstanceId]: {
+        ...prev[itemInstanceId],
         scannedBarcode: value,
         error: false
       }
     }));
   };
 
-  // Handle verify button click
-  const handleVerify = (item: OrderItem) => {
+  // Handle verify button click for a specific item instance
+  const handleVerify = (itemInstanceId: string, barcode: string) => {
     setVerificationStatus(prev => ({
       ...prev,
-      [item.id]: {
-        ...prev[item.id],
+      [itemInstanceId]: {
+        ...prev[itemInstanceId],
         verifying: true
       }
     }));
 
     // Simulate verification process (in a real app, this might be an API call)
     setTimeout(() => {
-      const isMatch = verificationStatus[item.id].scannedBarcode === item.barcode;
+      const isMatch = verificationStatus[itemInstanceId].scannedBarcode === barcode;
       
       setVerificationStatus(prev => ({
         ...prev,
-        [item.id]: {
-          ...prev[item.id],
+        [itemInstanceId]: {
+          ...prev[itemInstanceId],
           verified: isMatch,
           verifying: false,
           error: !isMatch
@@ -107,6 +112,9 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">Verify Products Before Processing</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Scan each product barcode to verify before processing the order.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
@@ -123,12 +131,12 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => {
+              {items.flatMap((item) => {
                 // Generate multiple rows based on quantity
                 const rows = [];
                 for (let i = 0; i < item.quantity; i++) {
-                  const itemKey = `${item.id}-${i}`;
-                  const status = verificationStatus[item.id] || {
+                  const itemInstanceId = `${item.id}-${i}`;
+                  const status = verificationStatus[itemInstanceId] || {
                     verified: false,
                     verifying: false,
                     scannedBarcode: '',
@@ -136,7 +144,7 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
                   };
                   
                   rows.push(
-                    <TableRow key={itemKey}>
+                    <TableRow key={itemInstanceId}>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>${item.price.toFixed(2)}</TableCell>
                       <TableCell>{item.barcode || 'BC-' + item.id}</TableCell>
@@ -145,7 +153,7 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
                         <Input
                           placeholder="Scan barcode here"
                           value={status.scannedBarcode}
-                          onChange={(e) => handleBarcodeInput(item.id, e.target.value)}
+                          onChange={(e) => handleBarcodeInput(itemInstanceId, e.target.value)}
                           className={status.error ? "border-red-500" : ""}
                           disabled={status.verified}
                         />
@@ -176,7 +184,7 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
                       <TableCell>
                         <Button 
                           size="sm" 
-                          onClick={() => handleVerify(item)}
+                          onClick={() => handleVerify(itemInstanceId, item.barcode || 'BC-' + item.id)}
                           disabled={status.verified || !status.scannedBarcode || status.verifying}
                         >
                           Confirm

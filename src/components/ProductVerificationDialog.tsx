@@ -49,6 +49,9 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
   // State for cancel confirmation dialog
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [itemToCancel, setItemToCancel] = useState<string | null>(null);
+  
+  // State to track if verification dialog should be reopened after cancel confirmation
+  const [shouldFocusVerificationDialog, setShouldFocusVerificationDialog] = useState(false);
 
   // Initialize verification status for all individual item instances
   useEffect(() => {
@@ -124,6 +127,8 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
   const handleCancelItem = (itemInstanceId: string) => {
     setItemToCancel(itemInstanceId);
     setCancelDialogOpen(true);
+    // When opening the cancel dialog, we want to return focus to the verification dialog after
+    setShouldFocusVerificationDialog(true);
   };
 
   // Confirm cancellation of item
@@ -140,14 +145,29 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
         }
       }));
     }
+    
+    // Close the cancel dialog
     setCancelDialogOpen(false);
     setItemToCancel(null);
+    
+    // The verification dialog should already be in focus since shouldFocusVerificationDialog is true
+    // We'll reset this flag now that we're done
+    setShouldFocusVerificationDialog(false);
   };
 
   // Format date as YYYY-MM-DD
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
+  };
+
+  // Handle the AlertDialog's onOpenChange event to maintain dialog focus state
+  const handleAlertDialogOpenChange = (open: boolean) => {
+    if (!open && shouldFocusVerificationDialog) {
+      // When alert dialog is closed and we should focus on verification dialog
+      setCancelDialogOpen(false);
+      setShouldFocusVerificationDialog(false);
+    }
   };
 
   return (
@@ -279,7 +299,10 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
       </Dialog>
 
       {/* Cancellation confirmation dialog */}
-      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+      <AlertDialog 
+        open={cancelDialogOpen} 
+        onOpenChange={handleAlertDialogOpenChange}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Item</AlertDialogTitle>
@@ -288,8 +311,16 @@ const ProductVerificationDialog: React.FC<ProductVerificationDialogProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setCancelDialogOpen(false)}>No, keep item</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmCancelItem} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel onClick={() => {
+              setCancelDialogOpen(false);
+              setShouldFocusVerificationDialog(false);
+            }}>
+              No, keep item
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCancelItem} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Yes, cancel item
             </AlertDialogAction>
           </AlertDialogFooter>

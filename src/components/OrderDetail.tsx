@@ -19,6 +19,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ProductVerificationDialog from './ProductVerificationDialog';
 
 type OrderDetailProps = {
   order: Order | null;
@@ -32,6 +33,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
   onOrderUpdated
 }) => {
   const [updatingStatus, setUpdatingStatus] = React.useState<boolean>(false);
+  const [isVerificationDialogOpen, setIsVerificationDialogOpen] = React.useState<boolean>(false);
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (!order) return;
@@ -51,6 +53,19 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
     } finally {
       setUpdatingStatus(false);
     }
+  };
+
+  const handleOpenVerificationDialog = () => {
+    setIsVerificationDialogOpen(true);
+  };
+
+  const handleCloseVerificationDialog = () => {
+    setIsVerificationDialogOpen(false);
+  };
+
+  const handleConfirmProcessing = async () => {
+    await handleStatusUpdate('processing');
+    setIsVerificationDialogOpen(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -185,7 +200,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               {order.status === 'new' && (
                 <Button
                   variant="default"
-                  onClick={() => handleStatusUpdate('processing')}
+                  onClick={handleOpenVerificationDialog}
                   disabled={updatingStatus}
                   className="bg-order-processing hover:bg-amber-600"
                 >
@@ -236,6 +251,16 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           </CardFooter>
         </Card>
       </div>
+
+      {/* Product Verification Dialog */}
+      {order && (
+        <ProductVerificationDialog
+          isOpen={isVerificationDialogOpen}
+          onClose={handleCloseVerificationDialog}
+          onConfirm={handleConfirmProcessing}
+          items={order.items}
+        />
+      )}
     </div>
   );
 };

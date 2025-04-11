@@ -1,21 +1,24 @@
-
 export type OrderStatus = 'new' | 'processing' | 'completed' | 'cancelled';
 
 export interface OrderItem {
   id: string;
   name: string;
-  quantity: number;
   price: number;
+  quantity: number;
+  barcode?: string;
+  expDate?: string;
+}
+
+export interface Customer {
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
 }
 
 export interface Order {
   id: string;
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-    address?: string;
-  };
+  customer: Customer;
   items: OrderItem[];
   total: number;
   status: OrderStatus;
@@ -23,92 +26,93 @@ export interface Order {
   updatedAt: string;
 }
 
-// Mock data for orders
+// Mock data
 const mockOrders: Order[] = [
   {
     id: '1001',
     customer: {
       name: 'John Doe',
-      email: 'john@example.com',
-      phone: '555-1234',
-      address: '123 Main St, Anytown, CA 94567',
+      email: 'john.doe@example.com',
+      phone: '(123) 456-7890',
+      address: '123 Main St, Anytown, CA 12345'
     },
     items: [
-      { id: 'item1', name: 'Product A', quantity: 2, price: 29.99 },
-      { id: 'item2', name: 'Product B', quantity: 1, price: 49.99 },
+      { id: '1', name: 'Wireless Headphones', price: 79.99, quantity: 1, barcode: 'BRC-9876543210', expDate: '2025-06-30' },
+      { id: '2', name: 'Smartphone Case', price: 19.99, quantity: 2, barcode: 'BRC-1234567890', expDate: '2026-03-15' }
     ],
-    total: 109.97,
+    total: 119.97,
     status: 'new',
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-    updatedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    createdAt: '2023-04-10T14:30:00Z',
+    updatedAt: '2023-04-10T14:30:00Z'
   },
   {
     id: '1002',
     customer: {
       name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '555-5678',
-      address: '456 Oak St, Somewhere, NY 10001',
+      email: 'jane.smith@example.com',
+      phone: '(987) 654-3210',
+      address: '456 Oak Ave, Somewhere, NY 54321'
     },
     items: [
-      { id: 'item3', name: 'Product C', quantity: 3, price: 19.99 },
+      { id: '3', name: 'Bluetooth Speaker', price: 49.99, quantity: 1, barcode: 'BRC-5678901234', expDate: '2024-12-31' },
+      { id: '4', name: 'USB-C Cable', price: 12.99, quantity: 3, barcode: 'BRC-6789012345', expDate: '2027-01-10' }
     ],
-    total: 59.97,
+    total: 88.96,
     status: 'processing',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-    updatedAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
+    createdAt: '2023-04-09T10:15:00Z',
+    updatedAt: '2023-04-09T16:45:00Z'
   },
   {
     id: '1003',
     customer: {
-      name: 'Bob Johnson',
-      email: 'bob@example.com',
-      phone: '555-9012',
-      address: '789 Pine St, Nowhere, TX 75001',
+      name: 'Robert Johnson',
+      email: 'robert.johnson@example.com',
+      phone: '(555) 123-4567',
+      address: '789 Pine Blvd, Elsewhere, TX 67890'
     },
     items: [
-      { id: 'item4', name: 'Product D', quantity: 1, price: 99.99 },
-      { id: 'item5', name: 'Product E', quantity: 2, price: 34.99 },
+      { id: '5', name: 'Wireless Mouse', price: 29.99, quantity: 1, barcode: 'BRC-7890123456', expDate: '2025-09-22' },
+      { id: '6', name: 'Keyboard', price: 59.99, quantity: 1, barcode: 'BRC-8901234567', expDate: '2025-10-15' }
     ],
-    total: 169.97,
+    total: 89.98,
     status: 'completed',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(), // 1 hour ago
+    createdAt: '2023-04-05T09:30:00Z',
+    updatedAt: '2023-04-07T11:20:00Z'
   },
   {
     id: '1004',
     customer: {
-      name: 'Alice Williams',
-      email: 'alice@example.com',
-      phone: '555-3456',
-      address: '321 Maple St, Elsewhere, FL 33101',
+      name: 'Emily Brown',
+      email: 'emily.brown@example.com',
+      phone: '(333) 444-5555',
+      address: '101 Maple Dr, Nowhere, FL 13579'
     },
     items: [
-      { id: 'item6', name: 'Product F', quantity: 1, price: 149.99 },
+      { id: '7', name: 'External Hard Drive', price: 89.99, quantity: 1, barcode: 'BRC-9012345678', expDate: '2026-05-18' }
     ],
-    total: 149.99,
+    total: 89.99,
     status: 'cancelled',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(), // 8 hours ago
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 7).toISOString(), // 7 hours ago
+    createdAt: '2023-04-02T15:45:00Z',
+    updatedAt: '2023-04-03T08:10:00Z'
   },
   {
     id: '1005',
     customer: {
-      name: 'Emma Brown',
-      email: 'emma@example.com',
-      phone: '555-7890',
-      address: '654 Cedar St, Someplace, WA 98001',
+      name: 'Michael Wilson',
+      email: 'michael.wilson@example.com',
+      phone: '(777) 888-9999',
+      address: '222 Birch St, Somewhere Else, WA 24680'
     },
     items: [
-      { id: 'item7', name: 'Product G', quantity: 2, price: 39.99 },
-      { id: 'item8', name: 'Product H', quantity: 1, price: 59.99 },
-      { id: 'item9', name: 'Product I', quantity: 3, price: 14.99 },
+      { id: '8', name: 'Wireless Earbuds', price: 49.99, quantity: 1, barcode: 'BRC-0123456789', expDate: '2025-11-30' },
+      { id: '9', name: 'Phone Charger', price: 24.99, quantity: 2, barcode: 'BRC-2345678901', expDate: '2026-01-20' },
+      { id: '10', name: 'Screen Protector', price: 9.99, quantity: 3, barcode: 'BRC-3456789012', expDate: '2027-02-25' }
     ],
-    total: 184.94,
+    total: 119.94,
     status: 'new',
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
-    updatedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-  },
+    createdAt: '2023-04-01T12:00:00Z',
+    updatedAt: '2023-04-01T12:00:00Z'
+  }
 ];
 
 // Simulate API call delay
